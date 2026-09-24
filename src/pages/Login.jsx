@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
 function UserIcon() {
@@ -72,6 +74,11 @@ function RefreshIcon() {
 function Login() {
   const [tipo, setTipo] = useState("estudiante");
   const [cambiando, setCambiando] = useState(false);
+  const [usuarioInput, setUsuarioInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const roles = {
     estudiante: {
@@ -109,6 +116,8 @@ function Login() {
 
   const cambiarAcceso = () => {
     setCambiando(true);
+    setUsuarioInput("");
+    setPasswordInput("");
 
     setTimeout(() => {
       setTipo(actual.siguiente);
@@ -119,24 +128,23 @@ function Login() {
   const iniciarSesion = (e) => {
     e.preventDefault();
 
-    console.log(`Intentando iniciar sesión como: ${tipo}`);
+    // 🔐 Login simulado (después se reemplaza por fetch al backend)
+    login(usuarioInput, tipo);
+
+    // Redirige según el rol
+    if (tipo === "estudiante") navigate("/estudiante");
+    else if (tipo === "docente") navigate("/docente");
+    else if (tipo === "admin") navigate("/direccion");
   };
 
   return (
     <main className="login-page">
-
-      {/* PANEL IZQUIERDO */}
-
       <section className="login-brand">
-
         <div className="brand-circle brand-circle-one"></div>
         <div className="brand-circle brand-circle-two"></div>
 
         <div className="brand-content">
-
-          <div className="brand-logo">
-            UTO
-          </div>
+          <div className="brand-logo">UTO</div>
 
           <span className="brand-label">
             UNIVERSIDAD TECNOLÓGICA DE ORIENTAL
@@ -149,173 +157,102 @@ function Login() {
           </h1>
 
           <p>
-            Plataforma institucional para la aplicación,
-            procesamiento y análisis de la evaluación docente.
+            Plataforma institucional para la aplicación, procesamiento y
+            análisis de la evaluación docente.
           </p>
 
           <div className="brand-line"></div>
 
           <div className="brand-features">
-
             <div>
               <span>✓</span>
               Evaluación académica
             </div>
-
             <div>
               <span>✓</span>
               Resultados automáticos
             </div>
-
             <div>
               <span>✓</span>
               Información segura y confidencial
             </div>
-
           </div>
-
         </div>
       </section>
 
-      {/* PANEL DERECHO */}
-
       <section className="login-area">
-
         <div className="login-card">
-
-          <div
-            className={`login-content ${
-              cambiando ? "login-changing" : ""
-            }`}
-          >
-
+          <div className={`login-content ${cambiando ? "login-changing" : ""}`}>
             <div className="login-top">
-
-              <div className="login-icon">
-                {actual.icono}
-              </div>
-
+              <div className="login-icon">{actual.icono}</div>
               <div>
-
-                <span className="login-welcome">
-                  ACCESO INSTITUCIONAL
-                </span>
-
-                <h2>
-                  {actual.titulo}
-                </h2>
-
+                <span className="login-welcome">ACCESO INSTITUCIONAL</span>
+                <h2>{actual.titulo}</h2>
               </div>
-
             </div>
 
-            <p className="login-description">
-              {actual.descripcion}
-            </p>
+            <p className="login-description">{actual.descripcion}</p>
 
             <form onSubmit={iniciarSesion}>
-
               <div className="field">
-
-                <label htmlFor="usuario">
-                  Usuario
-                </label>
-
+                <label htmlFor="usuario">Usuario</label>
                 <div className="input-box">
-
                   <span className="input-icon">
                     <UserIcon />
                   </span>
-
                   <input
                     id="usuario"
                     type="text"
                     placeholder={actual.usuario}
+                    value={usuarioInput}
+                    onChange={(e) => setUsuarioInput(e.target.value)}
                     required
                   />
-
                 </div>
-
               </div>
 
               <div className="field">
-
-                <label htmlFor="password">
-                  Contraseña
-                </label>
-
+                <label htmlFor="password">Contraseña</label>
                 <div className="input-box">
-
                   <span className="input-icon">
                     <LockIcon />
                   </span>
-
                   <input
                     id="password"
                     type="password"
                     placeholder="Ingresa tu contraseña"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
                     required
                   />
-
                 </div>
-
               </div>
 
               <div className="login-options">
-
                 <label className="remember">
-
                   <input type="checkbox" />
-
-                  <span>
-                    Recordarme
-                  </span>
-
+                  <span>Recordarme</span>
                 </label>
-
-                <button
-                  type="button"
-                  className="forgot"
-                >
+                <button type="button" className="forgot">
                   ¿Olvidaste tu contraseña?
                 </button>
-
               </div>
 
-              <button
-                type="submit"
-                className="login-button"
-              >
-
-                <span>
-                  Iniciar sesión
-                </span>
-
+              <button type="submit" className="login-button">
+                <span>Iniciar sesión</span>
                 <span className="button-arrow">
                   <ArrowIcon />
                 </span>
-
               </button>
-
             </form>
 
-            {/* CAMBIO DE ROL */}
-
             <div className="change-access">
-
               <div className="change-info">
-
-                <span className="change-small">
-                  CAMBIAR TIPO DE ACCESO
-                </span>
-
+                <span className="change-small">CAMBIAR TIPO DE ACCESO</span>
                 <span className="change-text">
                   Entrar como
-                  <strong>
-                    {actual.siguienteTexto}
-                  </strong>
+                  <strong>{actual.siguienteTexto}</strong>
                 </span>
-
               </div>
 
               <button
@@ -323,33 +260,21 @@ function Login() {
                 className="switch-button"
                 onClick={cambiarAcceso}
               >
-
                 <span className="switch-icon">
                   <RefreshIcon />
                 </span>
-
-                <span>
-                  Cambiar
-                </span>
-
+                <span>Cambiar</span>
               </button>
-
             </div>
-
           </div>
 
           <div className="login-footer">
-
             Universidad Tecnológica de Oriental
             <span> • </span>
             Evaluación Docente
-
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
