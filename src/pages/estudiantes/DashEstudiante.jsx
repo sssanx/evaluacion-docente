@@ -48,7 +48,6 @@ function DashEstudiante() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  // Lee los docentes con su estado real desde localStorage
   const [docentes] = useState(() => obtenerDocentesConEstado());
 
   const total = docentes.length;

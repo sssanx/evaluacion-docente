@@ -40,24 +40,25 @@ function EvaluarDocente() {
   const { docenteId } = useParams();
   const navigate = useNavigate();
 
+  // Busca el docente por id
   const docente = useMemo(
     () => docentesBaseMock.find((d) => d.id === parseInt(docenteId)),
     [docenteId]
   );
 
-  // Estados
+  // Estados (siempre se declaran, sin importar si el docente existe)
   const [respuestas, setRespuestas] = useState({});
   const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [errores, setErrores] = useState([]);
 
-  // Docente no existe
+  // Si el docente NO existe → volver al dashboard
   if (!docente) {
     navigate("/estudiante", { replace: true });
     return null;
   }
 
-  // Ya fue evaluado
+  // Si ya fue evaluado → mostrar aviso
   if (estaEvaluado(docente.id)) {
     return (
       <div className="eval-ya-evaluado">
@@ -80,6 +81,7 @@ function EvaluarDocente() {
     );
   }
 
+  // Total de preguntas
   const totalPreguntas = encuestaMock.secciones.reduce(
     (acc, s) => acc + s.preguntas.length,
     0
@@ -137,6 +139,7 @@ function EvaluarDocente() {
 
   return (
     <div className="eval-page">
+      {/* HEADER */}
       <header className="eval-header">
         <button className="btn-back" onClick={cancelar}>
           <BackIcon />
@@ -158,6 +161,7 @@ function EvaluarDocente() {
         </div>
       </header>
 
+      {/* CONTENIDO */}
       <main className="eval-main">
         {errores.length > 0 && (
           <div className="eval-error-box">
@@ -230,6 +234,7 @@ function EvaluarDocente() {
           </section>
         ))}
 
+        {/* COMENTARIOS */}
         <section className="eval-comentarios">
           <div className="eval-seccion-header">
             <span className="eval-seccion-num">💬</span>
@@ -254,6 +259,7 @@ function EvaluarDocente() {
           </div>
         </section>
 
+        {/* ACCIONES */}
         <div className="eval-acciones">
           <button
             type="button"
