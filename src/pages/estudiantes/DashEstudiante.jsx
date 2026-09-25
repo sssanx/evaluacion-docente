@@ -119,8 +119,8 @@ function DashEstudiante() {
           </div>
 
           <div className="dash-progress-info">
-            <span>✅ {evaluados} evaluadas</span>
-            <span>⏳ {pendientes} pendientes</span>
+            <span> {evaluados} evaluadas</span>
+            <span> {pendientes} pendientes</span>
           </div>
         </section>
 
@@ -166,7 +166,7 @@ function DashEstudiante() {
         </section>
 
         <footer className="dash-footer">
-          🔒 Tus respuestas son anónimas. El docente no sabrá quién lo evaluó.
+           Tus respuestas son anónimas. El docente no sabrá quién lo evaluó.
         </footer>
       </main>
     </div>
