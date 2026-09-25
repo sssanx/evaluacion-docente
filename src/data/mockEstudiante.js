@@ -1,4 +1,6 @@
-// Datos de prueba — después se reemplazan por llamadas al backend
+// =========================================================
+// DATOS MOCK — Después se reemplazan por llamadas al backend
+// =========================================================
 
 export const estudianteMock = {
   id: 1,
@@ -9,14 +11,13 @@ export const estudianteMock = {
   periodo: "Septiembre - Diciembre 2026",
 };
 
-export const docentesMock = [
+export const docentesBaseMock = [
   {
     id: 1,
     nombre: "Juan Pérez López",
     asignatura: "Programación Web",
     grupo: "A-301",
     carrera: "TSU en TI",
-    evaluado: false,
     avatar: "JP",
   },
   {
@@ -25,7 +26,6 @@ export const docentesMock = [
     asignatura: "Base de Datos",
     grupo: "A-301",
     carrera: "TSU en TI",
-    evaluado: true,
     avatar: "ML",
   },
   {
@@ -34,7 +34,6 @@ export const docentesMock = [
     asignatura: "Redes de Computadoras",
     grupo: "A-301",
     carrera: "TSU en TI",
-    evaluado: false,
     avatar: "CR",
   },
   {
@@ -43,7 +42,6 @@ export const docentesMock = [
     asignatura: "Inglés Técnico",
     grupo: "A-301",
     carrera: "TSU en TI",
-    evaluado: false,
     avatar: "LF",
   },
   {
@@ -52,12 +50,14 @@ export const docentesMock = [
     asignatura: "Matemáticas Discretas",
     grupo: "A-301",
     carrera: "TSU en TI",
-    evaluado: true,
     avatar: "RD",
   },
 ];
 
-// Encuesta de evaluación docente
+// =========================================================
+// ENCUESTA
+// =========================================================
+
 export const encuestaMock = {
   escala: [
     { valor: 1, etiqueta: "Muy deficiente" },
@@ -100,3 +100,49 @@ export const encuestaMock = {
     },
   ],
 };
+
+// =========================================================
+// PERSISTENCIA EN LOCALSTORAGE (temporal — después va al backend)
+// =========================================================
+
+const STORAGE_KEY = "evaluaciones_docentes";
+
+// Lee todas las evaluaciones guardadas
+export function obtenerEvaluaciones() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch {
+    return {};
+  }
+}
+
+// Guarda la evaluación de un docente
+export function guardarEvaluacion(docenteId, evaluacion) {
+  const actuales = obtenerEvaluaciones();
+  actuales[docenteId] = {
+    ...evaluacion,
+    fecha: new Date().toISOString(),
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(actuales));
+}
+
+// Verifica si un docente ya fue evaluado
+export function estaEvaluado(docenteId) {
+  const evaluaciones = obtenerEvaluaciones();
+  return Boolean(evaluaciones[docenteId]);
+}
+
+// Devuelve los docentes con su estado real (evaluado o no)
+export function obtenerDocentesConEstado() {
+  const evaluaciones = obtenerEvaluaciones();
+  return docentesBaseMock.map((docente) => ({
+    ...docente,
+    evaluado: Boolean(evaluaciones[docente.id]),
+  }));
+}
+
+// Limpia todo (útil para pruebas)
+export function limpiarEvaluaciones() {
+  localStorage.removeItem(STORAGE_KEY);
+}

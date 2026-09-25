@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { estudianteMock, docentesMock } from "../../data/mockEstudiante";
+import {
+  estudianteMock,
+  obtenerDocentesConEstado,
+} from "../../data/mockEstudiante";
 import "./DashEstudiante.css";
 
 function GraduationIcon() {
@@ -42,14 +45,16 @@ function ArrowIcon() {
 }
 
 function DashEstudiante() {
-  const { usuario, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const [docentes, setDocentes] = useState(docentesMock);
+
+  // Lee los docentes con su estado real desde localStorage
+  const [docentes] = useState(() => obtenerDocentesConEstado());
 
   const total = docentes.length;
   const evaluados = docentes.filter((d) => d.evaluado).length;
   const pendientes = total - evaluados;
-  const porcentaje = Math.round((evaluados / total) * 100);
+  const porcentaje = total > 0 ? Math.round((evaluados / total) * 100) : 0;
 
   const cerrarSesion = () => {
     logout();
@@ -62,7 +67,6 @@ function DashEstudiante() {
 
   return (
     <div className="dash-est-page">
-      {/* SIDEBAR */}
       <aside className="dash-sidebar">
         <div className="dash-logo">UTO</div>
 
@@ -83,9 +87,7 @@ function DashEstudiante() {
         </button>
       </aside>
 
-      {/* MAIN */}
       <main className="dash-main">
-        {/* HEADER */}
         <header className="dash-header">
           <div>
             <span className="dash-hello">BIENVENIDA</span>
@@ -102,7 +104,6 @@ function DashEstudiante() {
           </div>
         </header>
 
-        {/* PROGRESO */}
         <section className="dash-progress-card">
           <div className="dash-progress-text">
             <span className="dash-progress-label">Tu progreso</span>
@@ -124,7 +125,6 @@ function DashEstudiante() {
           </div>
         </section>
 
-        {/* LISTA DE DOCENTES */}
         <section className="dash-section">
           <div className="dash-section-header">
             <h2>Docentes por evaluar</h2>
@@ -142,9 +142,7 @@ function DashEstudiante() {
                 <div className="docente-info">
                   <h3>{docente.nombre}</h3>
                   <p className="docente-asignatura">{docente.asignatura}</p>
-                  <span className="docente-grupo">
-                    Grupo {docente.grupo}
-                  </span>
+                  <span className="docente-grupo">Grupo {docente.grupo}</span>
                 </div>
 
                 <div className="docente-accion">
@@ -168,7 +166,6 @@ function DashEstudiante() {
           </div>
         </section>
 
-        {/* INFO */}
         <footer className="dash-footer">
           🔒 Tus respuestas son anónimas. El docente no sabrá quién lo evaluó.
         </footer>

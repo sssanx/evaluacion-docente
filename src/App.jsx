@@ -4,6 +4,7 @@ import RutaProtegida from "./components/RutaProtegida";
 
 import Login from "./pages/Login";
 import DashEstudiante from "./pages/estudiantes/DashEstudiante";
+import EvaluarDocente from "./pages/estudiantes/EvaluarDocente";
 import DashDocente from "./pages/docente/DashDocente";
 import DashDireccion from "./pages/direccion/DashDireccion";
 
@@ -22,6 +23,15 @@ function App() {
               </RutaProtegida>
             }
           />
+          <Route
+            path="/estudiante/evaluar/:docenteId"
+            element={
+              <RutaProtegida rolRequerido="estudiante">
+                <EvaluarDocente />
+              </RutaProtegida>
+            }
+          />
+
           <Route
             path="/docente"
             element={
