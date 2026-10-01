@@ -3,26 +3,29 @@ const cors = require("cors");
 require("dotenv").config();
 
 const pool = require("./config/db");
+const authRoutes = require("./routes/auth");           // ← LÍNEA NUEVA #1
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Middlewares
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://eval-docente-uto.vercel.app",
+app.use(// usa el middleware par las peticiones
+  cors({// configura el puerto y no las blooque los navegadores 
+    origin: [//los dominios permitidos
+      "http://localhost:5173",// app local
+      "https://eval-docente-uto.vercel.app",//app en vercel
     ],
-    credentials: true,
+    credentials: true,// para enviar cookies o tokens
   })
 );
-app.use(express.json());
+
+app.use(express.json());                                // ← LÍNEA NUEVA #2
+app.use("/api/auth", authRoutes);                       // ← LÍNEA NUEVA #3 (con / al inicio)
 
 // Ruta de prueba
 app.get("/", (req, res) => {
   res.json({
-    message: "🚀 API Evaluación Docente funcionando",
+    message: " API Evaluación Docente funcionando",
     version: "1.0.0",
   });
 });
@@ -42,5 +45,5 @@ app.get("/api/test-db", async (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(` Servidor corriendo en http://localhost:${PORT}`);
 });
