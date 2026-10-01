@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
+// Ícono de usuario (para el campo de email)
 function UserIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -12,6 +13,7 @@ function UserIcon() {
   );
 }
 
+// Ícono de candado (para el campo de contraseña)
 function LockIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -21,6 +23,7 @@ function LockIcon() {
   );
 }
 
+// Ícono de birrete (para el rol de estudiante)
 function GraduationIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -31,6 +34,7 @@ function GraduationIcon() {
   );
 }
 
+// Ícono de docente (para el rol de docente)
 function TeacherIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -42,6 +46,7 @@ function TeacherIcon() {
   );
 }
 
+// Ícono de escudo (para el rol de admin)
 function AdminIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -51,6 +56,7 @@ function AdminIcon() {
   );
 }
 
+// Ícono de flecha (para el botón de iniciar sesión)
 function ArrowIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -60,6 +66,7 @@ function ArrowIcon() {
   );
 }
 
+// Ícono de refrescar (para el botón de cambiar rol)
 function RefreshIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -72,22 +79,39 @@ function RefreshIcon() {
 }
 
 function Login() {
+  // Rol actual seleccionado (estudiante, docente o admin)
   const [tipo, setTipo] = useState("estudiante");
+
+  // Controla la animación cuando se cambia de rol
   const [cambiando, setCambiando] = useState(false);
+
+  // Lo que el usuario escribe en el campo de email
   const [usuarioInput, setUsuarioInput] = useState("");
+
+  // Lo que el usuario escribe en el campo de contraseña
   const [passwordInput, setPasswordInput] = useState("");
 
+  // Mensaje de error si el login falla (ej: "Usuario no encontrado")
+  const [error, setError] = useState("");
+
+  // Se pone en true mientras esperamos la respuesta del backend
+  const [cargando, setCargando] = useState(false);
+
+  // Sirve para redirigir a otra ruta después del login
   const navigate = useNavigate();
+
+  // Trae la función login del contexto para guardar la sesión
   const { login } = useAuth();
 
+  // Configuración de cada rol: título, descripción, ícono, etc.
   const roles = {
     estudiante: {
       titulo: "Acceso de estudiantes",
       descripcion:
         "Ingresa tus datos institucionales para consultar y realizar tus evaluaciones docentes.",
-      usuario: "Número de estudiante",
+      usuario: "Correo institucional",
       icono: <GraduationIcon />,
-      siguiente: "docente",
+      siguiente: "docente",           // A qué rol se cambia al hacer clic en "Cambiar"
       siguienteTexto: "docente",
     },
 
@@ -95,7 +119,7 @@ function Login() {
       titulo: "Acceso de docentes",
       descripcion:
         "Ingresa tus datos institucionales para consultar tu información y resultados autorizados.",
-      usuario: "Usuario institucional",
+      usuario: "Correo institucional",
       icono: <TeacherIcon />,
       siguiente: "admin",
       siguienteTexto: "administrador",
@@ -105,40 +129,76 @@ function Login() {
       titulo: "Dirección Académica",
       descripcion:
         "Ingresa como administrador para gestionar evaluaciones, resultados, reportes y planes de acción.",
-      usuario: "Usuario administrador",
+      usuario: "Correo institucional",
       icono: <AdminIcon />,
       siguiente: "estudiante",
       siguienteTexto: "estudiante",
     },
   };
 
+  // Obtiene la configuración del rol actualmente seleccionado
   const actual = roles[tipo];
 
+  // Cambia al siguiente rol (con una animación)
   const cambiarAcceso = () => {
-    setCambiando(true);
-    setUsuarioInput("");
+    setCambiando(true);          // Activa la animación
+    setUsuarioInput("");          // Limpia los campos
     setPasswordInput("");
+    setError("");                 // Borra errores previos
 
+    // Espera 300ms (para que la animación termine) y cambia el rol
     setTimeout(() => {
       setTipo(actual.siguiente);
       setCambiando(false);
     }, 300);
   };
 
-  const iniciarSesion = (e) => {
-    e.preventDefault();
+  // Se ejecuta cuando el usuario envía el formulario
+  const iniciarSesion = async (e) => {
+    e.preventDefault();           // Evita que la página se recargue
+    setError("");                 // Limpia errores previos
+    setCargando(true);            // Activa el estado de carga
 
-    // 🔐 Login simulado (después se reemplaza por fetch al backend)
-    login(usuarioInput, tipo);
+    try {
+      // Llama al backend para verificar las credenciales
+      const respuesta = await fetch("http://localhost:4000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: usuarioInput,     // El email que escribió el usuario
+          password: passwordInput, // La contraseña
+          rol: tipo,               // El rol seleccionado
+        }),
+      });
 
-    // Redirige según el rol
-    if (tipo === "estudiante") navigate("/estudiante");
-    else if (tipo === "docente") navigate("/docente");
-    else if (tipo === "admin") navigate("/direccion");
+      // Convierte la respuesta del backend a un objeto
+      const datos = await respuesta.json();
+
+      // Si el backend respondió con error (401, 500, etc.)
+      if (!respuesta.ok) {
+        setError(datos.error || "Error al iniciar sesión");
+        setCargando(false);
+        return;
+      }
+
+      // Guarda el usuario y el token en el contexto (y en localStorage)
+      login(datos.usuario, datos.token);
+
+      // Redirige al dashboard según el rol
+      if (tipo === "estudiante") navigate("/estudiante");
+      else if (tipo === "docente") navigate("/docente");
+      else if (tipo === "admin") navigate("/direccion");
+    } catch (err) {
+      // Error de red (backend apagado, sin internet, etc.)
+      console.error(err);
+      setError("No se pudo conectar con el servidor");
+      setCargando(false);
+    }
   };
 
   return (
     <main className="login-page">
+      {/* ============ PANEL IZQUIERDO (BRANDING) ============ */}
       <section className="login-brand">
         <div className="brand-circle brand-circle-one"></div>
         <div className="brand-circle brand-circle-two"></div>
@@ -180,9 +240,11 @@ function Login() {
         </div>
       </section>
 
+      {/* ============ PANEL DERECHO (FORMULARIO) ============ */}
       <section className="login-area">
         <div className="login-card">
           <div className={`login-content ${cambiando ? "login-changing" : ""}`}>
+            {/* Encabezado con ícono y título según el rol */}
             <div className="login-top">
               <div className="login-icon">{actual.icono}</div>
               <div>
@@ -194,6 +256,7 @@ function Login() {
             <p className="login-description">{actual.descripcion}</p>
 
             <form onSubmit={iniciarSesion}>
+              {/* Campo de usuario (email) */}
               <div className="field">
                 <label htmlFor="usuario">Usuario</label>
                 <div className="input-box">
@@ -202,7 +265,7 @@ function Login() {
                   </span>
                   <input
                     id="usuario"
-                    type="text"
+                    type="email"
                     placeholder={actual.usuario}
                     value={usuarioInput}
                     onChange={(e) => setUsuarioInput(e.target.value)}
@@ -211,6 +274,7 @@ function Login() {
                 </div>
               </div>
 
+              {/* Campo de contraseña */}
               <div className="field">
                 <label htmlFor="password">Contraseña</label>
                 <div className="input-box">
@@ -228,6 +292,14 @@ function Login() {
                 </div>
               </div>
 
+              {/* Mensaje de error (solo aparece si hay uno) */}
+              {error && (
+                <div className="login-error">
+                  {error}
+                </div>
+              )}
+
+              {/* Opciones adicionales: recordarme y olvidé contraseña */}
               <div className="login-options">
                 <label className="remember">
                   <input type="checkbox" />
@@ -238,14 +310,20 @@ function Login() {
                 </button>
               </div>
 
-              <button type="submit" className="login-button">
-                <span>Iniciar sesión</span>
+              {/* Botón de iniciar sesión (se deshabilita mientras carga) */}
+              <button
+                type="submit"
+                className="login-button"
+                disabled={cargando}
+              >
+                <span>{cargando ? "Iniciando sesión..." : "Iniciar sesión"}</span>
                 <span className="button-arrow">
                   <ArrowIcon />
                 </span>
               </button>
             </form>
 
+            {/* Sección para cambiar de rol */}
             <div className="change-access">
               <div className="change-info">
                 <span className="change-small">CAMBIAR TIPO DE ACCESO</span>

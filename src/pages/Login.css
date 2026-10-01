@@ -1496,7 +1496,7 @@ input {
   .brand-line,
   .brand-features div,
   .login-card,
-  .login-welcome::before,
+  .login-welcome::before,.
   .change-small::before {
     animation: none !important;
   }
