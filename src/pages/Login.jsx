@@ -156,10 +156,18 @@ function Login() {
   // Se ejecuta cuando el usuario envía el formulario
   const iniciarSesion = async (e) => {
     e.preventDefault();           // Evita que la página se recargue
+
+    console.log(" SE EJECUTÓ iniciarSesion");
+    console.log(" Email:", usuarioInput);
+    console.log(" Password:", passwordInput);
+    console.log(" Tipo (rol):", tipo);
+
     setError("");                 // Limpia errores previos
     setCargando(true);            // Activa el estado de carga
 
     try {
+      console.log(" Haciendo fetch al backend...");
+
       // Llama al backend para verificar las credenciales
       const respuesta = await fetch("http://localhost:4000/api/auth/login", {
         method: "POST",
@@ -171,26 +179,34 @@ function Login() {
         }),
       });
 
+      console.log(" Status HTTP:", respuesta.status);
+
       // Convierte la respuesta del backend a un objeto
       const datos = await respuesta.json();
+      console.log(" Datos recibidos:", datos);
 
       // Si el backend respondió con error (401, 500, etc.)
       if (!respuesta.ok) {
+        console.log(" Error del backend:", datos.error);
         setError(datos.error || "Error al iniciar sesión");
         setCargando(false);
         return;
       }
 
       // Guarda el usuario y el token en el contexto (y en localStorage)
+      console.log(" Guardando usuario y token...");
       login(datos.usuario, datos.token);
+      console.log(" login() ejecutado");
 
       // Redirige al dashboard según el rol
+      console.log(" Navegando según tipo:", tipo);
       if (tipo === "estudiante") navigate("/estudiante");
       else if (tipo === "docente") navigate("/docente");
       else if (tipo === "admin") navigate("/direccion");
+      console.log(" navigate() ejecutado");
     } catch (err) {
       // Error de red (backend apagado, sin internet, etc.)
-      console.error(err);
+      console.error(" ERROR en try/catch:", err);
       setError("No se pudo conectar con el servidor");
       setCargando(false);
     }
