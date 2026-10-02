@@ -12,39 +12,45 @@ export function AuthProvider({ children }) {
 
   // Se ejecuta UNA vez al cargar la app: recupera la sesión guardada
   useEffect(() => {
-    // Lee del localStorage lo que había guardado de una sesión anterior
-    const usuarioGuardado = localStorage.getItem("usuario");
-    const tokenGuardado = localStorage.getItem("token");
+    const persistente = localStorage.getItem("usuario");
+    const persistenteToken = localStorage.getItem("token");
+    const temporal = sessionStorage.getItem("usuario");
+    const temporalToken = sessionStorage.getItem("token");
 
-    // Si ambos existen, restaura la sesión
+    const usuarioGuardado = persistente || temporal;
+    const tokenGuardado = persistenteToken || temporalToken;
+
     if (usuarioGuardado && tokenGuardado) {
       try {
-        // Convierte el string JSON de vuelta a objeto
         setUsuario(JSON.parse(usuarioGuardado));
         setToken(tokenGuardado);
       } catch {
-        // Si el JSON está corrupto, limpia todo para evitar errores
         localStorage.removeItem("usuario");
         localStorage.removeItem("token");
+        sessionStorage.removeItem("usuario");
+        sessionStorage.removeItem("token");
       }
     }
-  }, []); // [] significa que solo corre una vez al montar el componente
+  }, []);
 
-  // Guarda la sesión: se llama después de un login exitoso
-  const login = (usuarioData, tokenJWT) => {
-    // Convierte el objeto a texto para poder guardarlo en localStorage
-    localStorage.setItem("usuario", JSON.stringify(usuarioData));
-    localStorage.setItem("token", tokenJWT);
+  const login = (usuarioData, tokenJWT, persistir = true) => {
+    const destino = persistir ? localStorage : sessionStorage;
+    const otro = persistir ? sessionStorage : localStorage;
 
-    // Actualiza el estado para que la app sepa quién está logueado
+    otro.removeItem("usuario");
+    otro.removeItem("token");
+    destino.setItem("usuario", JSON.stringify(usuarioData));
+    destino.setItem("token", tokenJWT);
+
     setUsuario(usuarioData);
     setToken(tokenJWT);
   };
 
-  // Cierra sesión: borra todo lo guardado
   const logout = () => {
     localStorage.removeItem("usuario");
     localStorage.removeItem("token");
+    sessionStorage.removeItem("usuario");
+    sessionStorage.removeItem("token");
 
     // Limpia el estado para que la app sepa que ya no hay usuario
     setUsuario(null);
